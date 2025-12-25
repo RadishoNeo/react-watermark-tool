@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button, Card, ColorPicker, Flex, Form, Input, InputNumber, Slider, Typography, Watermark, Upload, message, Tooltip, Divider } from 'antd';
 import { DownloadOutlined, InboxOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColorPickerProps, GetProp, WatermarkProps } from 'antd';
+import html2canvas from 'html2canvas';
 
 const { Title, Paragraph } = Typography;
 const { Dragger } = Upload;
@@ -71,98 +72,40 @@ const ImageWatermark: React.FC = () => {
     message.loading({ content: '正在生成图片...', key: 'download' });
 
     try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.crossOrigin = "anonymous"; // Handle potential CORS issues if loading from URL (not applicable for DataURL but good practice)
+      // 使用html2canvas捕获包含水印的DOM元素
+      const canvas = await html2canvas(watermarkRef.current, {
+        backgroundColor: null, // 保持透明背景
+        scale: 2, // 提高分辨率
+        useCORS: true,
+        allowTaint: true,
+        width: watermarkRef.current.offsetWidth,
+        height: watermarkRef.current.offsetHeight,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: watermarkRef.current.offsetWidth,
+        windowHeight: watermarkRef.current.offsetHeight,
+      });
 
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        // Draw original image
-        ctx?.drawImage(img, 0, 0);
-
-        // Draw Watermark
-        if (ctx) {
-          ctx.save();
-          // Parse color alpha for globalAlpha if needed, but easier to just use the fillStyle provided
-           // Note: Watermark component uses a mix of opacity and color. Here we approximate.
-          ctx.fillStyle = typeof color === 'string' ? color : color.toRgbString();
-          // Antd Watermark component simplifies fonts. Replicating exactly is complex.
-          // Using a simple approximation.
-          ctx.font = `${fontSize}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          
-          // Handle transparency if contained in color string or apply default
-          // Typically antd watermark applies font color directly.
-
-          // Grid logic for watermark
-          // Calculate diagonal distance/bounding box to cover rotation
-           // Simply looping enough times to cover the canvas
-           // Ideally, we replicate the exact logic of antd's watermark canvas generation, 
-           // but for client-side download without html2canvas (which can be blurry), this manual canvas approach is crisper.
-           
-           // Simplified tiling logic:
-           const textMetrics = ctx.measureText(content);
-           const textWidth = textMetrics.width;
-           const stepX = gap[0] + textWidth;
-           const stepY = gap[1] + fontSize * 2; // Rough estimate for height
-           
-           // Rotate context? No, Antd rotates text at each point.
-           // Actually Antd Watermark renders a pattern.
-           // Let's stick to the current logic but ensure it covers everything.
-           
-           // Improved loop to ensure coverage even with rotation
-           // We'll draw on a larger virtual canvas and clip, or just overdraw.
-           
-           // Start from negative coordinates
-           const startX = -canvas.width;
-           const startY = -canvas.height;
-           const endX = canvas.width * 2;
-           const endY = canvas.height * 2;
-
-           for (let x = startX; x < endX; x += stepX) {
-             for (let y = startY; y < endY; y += stepY) {
-                ctx.save();
-                // Apply Offset
-                const drawX = x + (offset?.[0] || 0);
-                const drawY = y + (offset?.[1] || 0);
-                
-                ctx.translate(drawX, drawY);
-                ctx.rotate((rotate * Math.PI) / 180);
-                ctx.fillText(content, 0, 0);
-                ctx.restore();
-             }
-           }
-           ctx.restore();
+      // 将canvas转换为blob并下载
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `watermark-${Date.now()}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          message.success({ content: '下载成功!', key: 'download' });
+        } else {
+          message.error({ content: '生成图片失败', key: 'download' });
         }
-
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `watermark-${Date.now()}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            message.success({ content: '下载成功!', key: 'download' });
-          } else {
-             message.error({ content: '生成图片失败', key: 'download' });
-          }
-        });
-      };
-      img.onerror = () => {
-          message.error({ content: '加载图片失败', key: 'download' });
-      }
-      img.src = imageUrl;
+      }, 'image/png', 1.0);
 
     } catch (error) {
-        console.error(error);
-        message.error({ content: '发生错误', key: 'download' });
+      console.error(error);
+      message.error({ content: '发生错误', key: 'download' });
     }
   };
 
