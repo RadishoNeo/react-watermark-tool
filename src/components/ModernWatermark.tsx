@@ -208,7 +208,7 @@ const ModernWatermark: React.FC = () => {
                                 whileHover={{ scale: 1.05, rotate: 5 }}
                                 className="w-20 h-20 rounded-2xl glass p-4 flex items-center justify-center border-white/10"
                             >
-                                <img src="/logo.svg" alt="Watermark Pro Logo" className="w-full h-full" />
+                                <img src={`${import.meta.env.VITE_BASE_URI}/logo.svg`} alt="Watermark Pro Logo" className="w-full h-full" />
                             </motion.div>
                         </div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-indigo-300 mb-6">
