@@ -21,7 +21,9 @@ import {
     Settings2,
     Image as ImageIcon,
     ChevronRight,
-    Sparkles
+    Sparkles,
+    Github,
+    Heart
 } from 'lucide-react';
 import type { ColorPickerProps, GetProp, WatermarkProps } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -201,6 +203,14 @@ const ModernWatermark: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center mb-16"
                     >
+                        <div className="flex justify-center mb-6">
+                            <motion.div
+                                whileHover={{ scale: 1.05, rotate: 5 }}
+                                className="w-20 h-20 rounded-2xl glass p-4 flex items-center justify-center border-white/10"
+                            >
+                                <img src="/logo.svg" alt="Watermark Pro Logo" className="w-full h-full" />
+                            </motion.div>
+                        </div>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass border border-white/10 text-xs font-medium text-indigo-300 mb-6">
                             <Sparkles size={14} className="text-indigo-400" />
                             <span>Experience the Future of Watermarking</span>
@@ -426,6 +436,44 @@ const ModernWatermark: React.FC = () => {
           .ant-form-item-label label { height: auto !important; }
         ` }} />
             </div>
+
+            {/* Footer */}
+            <motion.footer
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-24 pb-8 text-center"
+            >
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-px w-24 bg-linear-to-r from-transparent via-zinc-700 to-transparent mb-4" />
+                    <div className="flex items-center gap-2 text-zinc-500 text-sm">
+                        <span>Created with</span>
+                        <Heart size={14} className="text-rose-500 fill-rose-500" />
+                        <span>by</span>
+                        <a
+                            href="https://github.com/RadishoNeo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                        >
+                            RadishoNeo
+                        </a>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <a
+                            href="https://github.com/RadishoNeo"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-xs"
+                        >
+                            <Github size={14} />
+                            GitHub Profile
+                        </a>
+                        <span className="text-zinc-800">|</span>
+                        <span className="text-zinc-600 text-xs">© 2026 Watermark Pro. All rights reserved.</span>
+                    </div>
+                </div>
+            </motion.footer>
         </ConfigProvider>
     );
 };
